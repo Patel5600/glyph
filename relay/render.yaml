@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: glyph-relay
+    env: docker
+    dockerfilePath: relay/Dockerfile
+    dockerContext: relay
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false # Set in Render Dashboard: your Neon or Supabase PostgreSQL connection string
+      - key: PORT
+        value: 8080

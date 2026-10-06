@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Glyph</string>
+    <string name="onboarding_title">Glyph Messenger</string>
+    <string name="onboarding_subtitle">Ultra-minimal, Quantum-Resistant E2EE Messenger powered by MAMA40 assembly core.</string>
+    <string name="claim_button">Claim Identity</string>
+    <string name="username_hint">Username (a-z0-9_, 3–32 chars)</string>
+    <string name="recovery_notice">Save this recovery code securely. It is shown only once and cannot be recovered if lost.</string>
+    <string name="new_chat">New Chat</string>
+    <string name="send_hint">Type an encrypted message...</string>
+    <string name="settings">Settings</string>
+</resources>

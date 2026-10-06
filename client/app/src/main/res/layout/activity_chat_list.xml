@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <!-- Top Bar -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/surface_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp">
+
+        <TextView
+            android:id="@+id/txtAppTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Glyph"
+            android:textColor="@color/accent_cyan"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtActiveUsername"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:text="@alice"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
+
+        <ImageButton
+            android:id="@+id/btnSettings"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_manage"
+            android:contentDescription="@string/settings" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/dividerTop"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/topBar"
+        android:background="@color/surface_border" />
+
+    <!-- Chat Threads List -->
+    <ListView
+        android:id="@+id/listChats"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/dividerTop"
+        android:divider="@color/surface_border"
+        android:dividerHeight="1dp" />
+
+    <!-- Empty State -->
+    <TextView
+        android:id="@+id/txtEmpty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:padding="32dp"
+        android:text="No chats yet.\nTap '+ New Chat' to message someone by their username!"
+        android:textColor="@color/text_secondary"
+        android:textSize="15sp"
+        android:visibility="gone" />
+
+    <!-- Floating Action Button: New Chat -->
+    <Button
+        android:id="@+id/btnNewChat"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="24dp"
+        android:background="@drawable/btn_primary"
+        android:paddingHorizontal="24dp"
+        android:text="+ New Chat"
+        android:textColor="@color/bg_dark"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+</RelativeLayout>

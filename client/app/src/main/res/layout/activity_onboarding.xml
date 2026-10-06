@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="@string/onboarding_title"
+            android:textColor="@color/accent_cyan"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/onboarding_subtitle"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
+
+        <!-- Claim Form Section -->
+        <LinearLayout
+            android:id="@+id/layoutClaimForm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Choose Your Username"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/editUsername"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input"
+                android:hint="@string/username_hint"
+                android:importantForAutofill="no"
+                android:inputType="textNoSuggestions"
+                android:paddingHorizontal="16dp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_secondary"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Relay Server URL"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/editRelayUrl"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_input"
+                android:hint="http://10.0.2.2:8080 or Render URL"
+                android:importantForAutofill="no"
+                android:inputType="textUri"
+                android:paddingHorizontal="16dp"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btnClaim"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="28dp"
+                android:background="@drawable/btn_primary"
+                android:text="@string/claim_button"
+                android:textColor="@color/bg_dark"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/txtError"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="12dp"
+                android:textColor="@color/error_red"
+                android:textSize="13sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Recovery Code Card (Shown once after claim) -->
+        <LinearLayout
+            android:id="@+id/layoutRecoveryCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Identity Created Successfully!"
+                android:textColor="@color/accent_cyan"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/recovery_notice"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/txtRecoveryCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_input"
+                android:fontFamily="monospace"
+                android:lineSpacingExtra="4dp"
+                android:padding="14dp"
+                android:textIsSelectable="true"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnCopyRecovery"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_input"
+                    android:text="Copy Code"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/btnContinueChats"
+                    android:layout_width="0dp"
+                    android:layout_height="46dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/btn_primary"
+                    android:text="Continue"
+                    android:textColor="@color/bg_dark"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

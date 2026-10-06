@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <!-- Top Bar -->
+    <LinearLayout
+        android:id="@+id/chatTopBar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/surface_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_revert"
+            android:contentDescription="Back" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/txtPeerUsername"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@bob"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtPeerKeyFingerprint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace"
+                android:text="E2EE (MAMA40 X25519)"
+                android:textColor="@color/accent_cyan"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:id="@+id/chatDividerTop"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/chatTopBar"
+        android:background="@color/surface_border" />
+
+    <!-- Message Bubble List -->
+    <ListView
+        android:id="@+id/listMessages"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomInputBar"
+        android:layout_below="@id/chatDividerTop"
+        android:divider="@null"
+        android:dividerHeight="6dp"
+        android:padding="12dp"
+        android:transcriptMode="alwaysScroll"
+        android:stackFromBottom="true" />
+
+    <!-- Bottom Input Bar -->
+    <LinearLayout
+        android:id="@+id/bottomInputBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/surface_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <EditText
+            android:id="@+id/editMessage"
+            android:layout_width="0dp"
+            android:layout_height="44dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_input"
+            android:hint="@string/send_hint"
+            android:importantForAutofill="no"
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLines="3"
+            android:paddingHorizontal="14dp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_secondary"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnSend"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/btn_primary"
+            android:minWidth="64dp"
+            android:text="Send"
+            android:textColor="@color/bg_dark"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</RelativeLayout>
