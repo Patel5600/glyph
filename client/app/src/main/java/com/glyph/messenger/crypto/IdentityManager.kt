@@ -86,12 +86,11 @@ class IdentityManager(private val context: Context) {
         val existingList = listIdentities().toMutableList()
         require(existingList.size < MAX_IDENTITIES) { "Maximum $MAX_IDENTITIES identities reached" }
 
-        // 1. Generate 32-byte Ed25519/MAMA seed
+        // 1. Generate 32-byte Ed25519 private seed and derive public key
         val signPriv = MamaCrypto.randomBytes(32)
-        // Public key from private key via X25519/Ed25519 base point derivation
-        val signPub = MamaCrypto.x25519Base(signPriv) ?: throw IllegalStateException("Failed to derive sign public key")
+        val signPub = Ed25519.derivePublicKey(signPriv)
 
-        // 2. Generate X25519 DH keypair for E2EE chat
+        // 2. Generate X25519 DH keypair for E2EE chat (using MAMA40 assembly engine)
         val dhPriv = MamaCrypto.randomBytes(32)
         val dhPub = MamaCrypto.x25519Base(dhPriv) ?: throw IllegalStateException("Failed to derive DH public key")
 
@@ -134,14 +133,12 @@ class IdentityManager(private val context: Context) {
     }
 
     /**
-     * Signs the identity claim message: "claim:<username>:<timestamp>"
+     * Signs the identity claim message: "claim:<username>:<timestamp>" using Ed25519
      */
     fun signClaim(record: IdentityRecord, timestamp: Long): String {
         val msg = "claim:${record.username}:$timestamp".toByteArray(Charsets.UTF_8)
         val privBytes = hexToBytes(record.signPrivKeyHex)
-        val pubBytes = hexToBytes(record.signPubKeyHex)
-
-        val sig = MamaCrypto.sign(msg, privBytes, pubBytes)
+        val sig = Ed25519.sign(privBytes, msg)
         return bytesToHex(sig)
     }
 }

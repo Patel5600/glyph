@@ -10,4 +10,5 @@
     <color name="bubble_outgoing">#005F58</color>
     <color name="bubble_incoming">#21262D</color>
     <color name="error_red">#F85149</color>
+    <color name="ic_launcher_background">#0D1117</color>
 </resources>

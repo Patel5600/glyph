@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Shadow layer (deep sage, offset) -->
+    <path
+        android:fillColor="#662C6851"
+        android:pathData="
+        M57,28
+        C42,28 30,40 30,55
+        C30,70 42,82 57,82
+        L72,82
+        L72,55
+        L55,55
+        L55,64
+        L63,64
+        L63,73
+        L57,73
+        C47,73 39,65 39,55
+        C39,45 47,37 57,37
+        C64,37 70,41 73,47
+        L82,42
+        C77,34 68,28 57,28Z" />
+
+    <!-- Layer 3: deep sage -->
+    <path
+        android:fillColor="#1F4E3A"
+        android:pathData="
+        M55,31
+        C41,31 29,43 29,57
+        C29,71 41,83 55,83
+        L70,83
+        L70,57
+        L53,57
+        L53,66
+        L61,66
+        L61,74
+        L55,74
+        C46,74 38,66 38,57
+        C38,48 46,40 55,40
+        C62,40 68,44 71,50
+        L80,45
+        C75,37 66,31 55,31Z" />
+
+    <!-- Layer 2: medium sage -->
+    <path
+        android:fillColor="#2C6851"
+        android:pathData="
+        M55,28
+        C41,28 29,40 29,54
+        C29,68 41,80 55,80
+        L70,80
+        L70,54
+        L53,54
+        L53,63
+        L61,63
+        L61,71
+        L55,71
+        C46,71 38,63 38,54
+        C38,45 46,37 55,37
+        C62,37 68,41 71,47
+        L80,42
+        C75,34 66,28 55,28Z" />
+
+    <!-- Main G: sage front layer -->
+    <path
+        android:fillColor="#3A7A61"
+        android:pathData="
+        M54,25
+        C40,25 28,37 28,51
+        C28,65 40,77 54,77
+        L69,77
+        L69,51
+        L52,51
+        L52,60
+        L60,60
+        L60,68
+        L54,68
+        C45,68 37,60 37,51
+        C37,42 45,34 54,34
+        C61,34 67,38 70,44
+        L79,39
+        C74,31 65,25 54,25Z" />
+
+    <!-- Horizontal bar highlight (warm light) -->
+    <path
+        android:fillColor="#E9DCC2"
+        android:fillAlpha="0.85"
+        android:pathData="M52,51 L69,51 L69,55 L52,55Z" />
+
+</vector>
