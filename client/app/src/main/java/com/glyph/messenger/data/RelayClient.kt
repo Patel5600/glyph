@@ -31,7 +31,7 @@ class RelayClient(private val context: Context) {
 
     companion object {
         private const val TAG = "GlyphRelay"
-        private const val DEFAULT_RELAY_URL = "http://10.0.2.2:8080" // Default for testing, configurable
+        private const val DEFAULT_RELAY_URL = "https://glyph-relay.onrender.com"
         private const val PREF_RELAY_URL = "relay_server_url"
     }
 
