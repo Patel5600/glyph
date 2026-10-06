@@ -495,6 +495,12 @@ func main() {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
+	dbType := "SQLite"
+	if db.isPostgres {
+		dbType = "PostgreSQL"
+	}
+	log.Printf("Database backend connected: %s", dbType)
+
 	server := NewServer(db)
 	server.startTTLCleaner(48 * 3600) // 48-hour TTL
 
