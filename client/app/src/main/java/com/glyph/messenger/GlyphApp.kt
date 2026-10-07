@@ -52,8 +52,11 @@ class GlyphApp : Application() {
                 val active = identityManager.getActiveIdentity()
                 if (active != null) {
                     try {
+                        val ts = System.currentTimeMillis() / 1000
+                        val inboxSig = identityManager.signAuth(active, "inbox", ts)
+
                         // 1. Drain inbox on connect/wake
-                        val inboxRes = relayClient.fetchInbox(active.username)
+                        val inboxRes = relayClient.fetchInbox(active.username, ts, inboxSig)
                         if (inboxRes.isSuccess) {
                             val messages = inboxRes.getOrNull() ?: emptyList()
                             for (msg in messages) {
@@ -62,7 +65,9 @@ class GlyphApp : Application() {
                         }
 
                         // 2. Open live SSE stream
-                        relayClient.streamEvents(active.username) { msg ->
+                        val eventsTs = System.currentTimeMillis() / 1000
+                        val eventsSig = identityManager.signAuth(active, "events", eventsTs)
+                        relayClient.streamEvents(active.username, eventsTs, eventsSig) { msg ->
                             processInboundMessage(active, msg)
                         }
                     } catch (e: Exception) {
@@ -77,7 +82,20 @@ class GlyphApp : Application() {
     private fun processInboundMessage(activeIdentity: com.glyph.messenger.crypto.IdentityRecord, msg: InboundMessage) {
         appScope.launch {
             try {
-                // Decrypt message with MAMA40 assembly
+                // Ensure sender contact is resolved so we have their identity public key
+                var contact = localStore.getContact(msg.sender)
+                if (contact == null) {
+                    val res = relayClient.resolveUsername(msg.sender)
+                    if (res.isSuccess) {
+                        val p = res.getOrNull()
+                        if (p != null) {
+                            localStore.saveContact(p.username, p.pubkeyHex)
+                            contact = com.glyph.messenger.data.ContactRecord(p.username, p.pubkeyHex, System.currentTimeMillis() / 1000)
+                        }
+                    }
+                }
+
+                // Decrypt and cryptographically verify sender signature
                 val plaintext = ChatCrypto.decrypt(
                     ciphertextBase64 = msg.ciphertext,
                     nonceHex = msg.nonce,
@@ -85,7 +103,8 @@ class GlyphApp : Application() {
                     recipientDhPrivHex = activeIdentity.dhPrivKeyHex,
                     recipientDhPubHex = activeIdentity.dhPubKeyHex,
                     senderUsername = msg.sender,
-                    recipientUsername = activeIdentity.username
+                    recipientUsername = activeIdentity.username,
+                    senderSignPubHex = contact?.dhPubHex
                 )
 
                 // Save to local SQLite
@@ -103,7 +122,7 @@ class GlyphApp : Application() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e("GlyphApp", "Failed to decrypt inbound message from ${msg.sender}", e)
+                Log.e("GlyphApp", "Failed to decrypt/verify inbound message from ${msg.sender}", e)
             }
         }
     }

@@ -2,11 +2,9 @@ package com.glyph.messenger.crypto
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Base64
 import com.mama40.crypto.MamaCrypto
 import org.json.JSONArray
 import org.json.JSONObject
-import java.security.MessageDigest
 
 data class IdentityRecord(
     val username: String,
@@ -20,6 +18,7 @@ data class IdentityRecord(
 class IdentityManager(private val context: Context) {
 
     private val prefs: SharedPreferences = context.getSharedPreferences("glyph_identities", Context.MODE_PRIVATE)
+    private val keyStoreManager = KeyStoreManager()
 
     companion object {
         const val MAX_IDENTITIES = 3
@@ -51,13 +50,48 @@ class IdentityManager(private val context: Context) {
         val jsonStr = prefs.getString("id_$username", null) ?: return null
         return try {
             val obj = JSONObject(jsonStr)
+            val signPubHex = obj.getString("sign_pub")
+            val dhPubHex = obj.getString("dh_pub")
+
+            val signPrivBytes: ByteArray
+            val dhPrivBytes: ByteArray
+
+            if (obj.optBoolean("keystore_v1", false)) {
+                // Hardware Keystore AES-256-GCM decrypted
+                signPrivBytes = keyStoreManager.decrypt(obj.getString("enc_sign_priv"))
+                dhPrivBytes = keyStoreManager.decrypt(obj.getString("enc_dh_priv"))
+            } else {
+                // Legacy plaintext format -> Seamlessly migrate into Hardware Keystore
+                signPrivBytes = hexToBytes(obj.getString("sign_priv"))
+                dhPrivBytes = hexToBytes(obj.getString("dh_priv"))
+
+                val encSign = keyStoreManager.encrypt(signPrivBytes)
+                val encDh = keyStoreManager.encrypt(dhPrivBytes)
+
+                val migratedObj = JSONObject().apply {
+                    put("username", username)
+                    put("sign_pub", signPubHex)
+                    put("enc_sign_priv", encSign)
+                    put("dh_pub", dhPubHex)
+                    put("enc_dh_priv", encDh)
+                    put("keystore_v1", true)
+                }
+                prefs.edit().putString("id_$username", migratedObj.toString()).apply()
+            }
+
+            // Derive master recovery code dynamically on-demand (never persisted in plaintext)
+            val recoverySeed = ByteArray(64)
+            System.arraycopy(signPrivBytes, 0, recoverySeed, 0, 32)
+            System.arraycopy(dhPrivBytes, 0, recoverySeed, 32, 32)
+            val recoveryCode = bytesToHex(recoverySeed).chunked(4).joinToString("-")
+
             IdentityRecord(
-                username = obj.getString("username"),
-                signPubKeyHex = obj.getString("sign_pub"),
-                signPrivKeyHex = obj.getString("sign_priv"),
-                dhPubKeyHex = obj.getString("dh_pub"),
-                dhPrivKeyHex = obj.getString("dh_priv"),
-                recoveryCode = obj.getString("recovery_code")
+                username = username,
+                signPubKeyHex = signPubHex,
+                signPrivKeyHex = bytesToHex(signPrivBytes),
+                dhPubKeyHex = dhPubHex,
+                dhPrivKeyHex = bytesToHex(dhPrivBytes),
+                recoveryCode = recoveryCode
             )
         } catch (e: Exception) {
             null
@@ -80,7 +114,7 @@ class IdentityManager(private val context: Context) {
 
     /**
      * Creates a new identity bounded to the given username.
-     * Uses MAMA40 bare-metal assembly for key generation and digital signing.
+     * Generates keys and encrypts private key material with Android Keystore AES-256-GCM before saving.
      */
     fun createIdentity(username: String): IdentityRecord {
         val existingList = listIdentities().toMutableList()
@@ -94,7 +128,11 @@ class IdentityManager(private val context: Context) {
         val dhPriv = MamaCrypto.randomBytes(32)
         val dhPub = MamaCrypto.x25519Base(dhPriv) ?: throw IllegalStateException("Failed to derive DH public key")
 
-        // 3. Format a clean 24-word/chunk recovery code from private keys
+        // 3. Encrypt private keys with Android Keystore AES-256-GCM
+        val encSignPriv = keyStoreManager.encrypt(signPriv)
+        val encDhPriv = keyStoreManager.encrypt(dhPriv)
+
+        // 4. Derive recovery code on-demand
         val recoverySeed = ByteArray(64)
         System.arraycopy(signPriv, 0, recoverySeed, 0, 32)
         System.arraycopy(dhPriv, 0, recoverySeed, 32, 32)
@@ -109,14 +147,14 @@ class IdentityManager(private val context: Context) {
             recoveryCode = recoveryCode
         )
 
-        // Save to preferences
+        // Save to preferences with encrypted fields (zero plaintext private keys)
         val obj = JSONObject().apply {
             put("username", record.username)
             put("sign_pub", record.signPubKeyHex)
-            put("sign_priv", record.signPrivKeyHex)
+            put("enc_sign_priv", encSignPriv)
             put("dh_pub", record.dhPubKeyHex)
-            put("dh_priv", record.dhPrivKeyHex)
-            put("recovery_code", record.recoveryCode)
+            put("enc_dh_priv", encDhPriv)
+            put("keystore_v1", true)
         }
 
         if (!existingList.contains(username)) {
@@ -137,6 +175,33 @@ class IdentityManager(private val context: Context) {
      */
     fun signClaim(record: IdentityRecord, timestamp: Long): String {
         val msg = "claim:${record.username}:$timestamp".toByteArray(Charsets.UTF_8)
+        val privBytes = hexToBytes(record.signPrivKeyHex)
+        val sig = Ed25519.sign(privBytes, msg)
+        return bytesToHex(sig)
+    }
+
+    /**
+     * Signs authorization for relay actions: "<action>:<username>:<timestamp>" (e.g. inbox, events)
+     */
+    fun signAuth(record: IdentityRecord, action: String, timestamp: Long): String {
+        val msg = "$action:${record.username}:$timestamp".toByteArray(Charsets.UTF_8)
+        val privBytes = hexToBytes(record.signPrivKeyHex)
+        val sig = Ed25519.sign(privBytes, msg)
+        return bytesToHex(sig)
+    }
+
+    /**
+     * Signs relay send submission: "send:<sender>:<recipient>:<ciphertext>:<nonce>:<ephemeral_key>:<timestamp>"
+     */
+    fun signSend(
+        record: IdentityRecord,
+        recipient: String,
+        ciphertext: String,
+        nonce: String,
+        ephemeralKey: String,
+        timestamp: Long
+    ): String {
+        val msg = "send:${record.username}:$recipient:$ciphertext:$nonce:$ephemeralKey:$timestamp".toByteArray(Charsets.UTF_8)
         val privBytes = hexToBytes(record.signPrivKeyHex)
         val sig = Ed25519.sign(privBytes, msg)
         return bytesToHex(sig)

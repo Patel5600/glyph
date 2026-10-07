@@ -118,7 +118,9 @@ class RelayClient(private val context: Context) {
         sender: String,
         ciphertext: String,
         nonce: String,
-        ephemeralKey: String
+        ephemeralKey: String,
+        timestamp: Long,
+        sig: String
     ): Result<Long> = withContext(Dispatchers.IO) {
         try {
             val url = URL("$relayBaseUrl/v1/send")
@@ -136,7 +138,8 @@ class RelayClient(private val context: Context) {
                 put("ciphertext", ciphertext)
                 put("nonce", nonce)
                 put("ephemeral_key", ephemeralKey)
-                put("timestamp", System.currentTimeMillis() / 1000)
+                put("timestamp", timestamp)
+                put("sig", sig)
             }
 
             OutputStreamWriter(conn.outputStream, "UTF-8").use {
@@ -159,19 +162,26 @@ class RelayClient(private val context: Context) {
         }
     }
 
-    suspend fun fetchInbox(username: String): Result<List<InboundMessage>> =
+    suspend fun fetchInbox(
+        username: String,
+        timestamp: Long,
+        sig: String
+    ): Result<List<InboundMessage>> =
         withContext(Dispatchers.IO) {
             try {
                 val url = URL("$relayBaseUrl/v1/inbox?username=$username")
                 val conn = (url.openConnection() as HttpURLConnection).apply {
                     requestMethod = "GET"
+                    setRequestProperty("X-Glyph-Timestamp", "$timestamp")
+                    setRequestProperty("X-Glyph-Signature", sig)
                     connectTimeout = 15000
                     readTimeout = 15000
                 }
 
                 val code = conn.responseCode
                 if (code != 200) {
-                    return@withContext Result.failure(Exception("Fetch inbox HTTP $code"))
+                    val err = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: "HTTP $code"
+                    return@withContext Result.failure(Exception("Fetch inbox ($code): $err"))
                 }
 
                 val resp = conn.inputStream.bufferedReader().use { it.readText() }
@@ -205,19 +215,27 @@ class RelayClient(private val context: Context) {
      * Connects to Server-Sent Events (SSE) stream for real-time instant messaging.
      * Invokes onMessageReceived for each incoming decrypted packet.
      */
-    suspend fun streamEvents(username: String, onMessage: (InboundMessage) -> Unit) =
+    suspend fun streamEvents(
+        username: String,
+        timestamp: Long,
+        sig: String,
+        onMessage: (InboundMessage) -> Unit
+    ) =
         withContext(Dispatchers.IO) {
             try {
-                val url = URL("$relayBaseUrl/v1/events?username=$username")
+                val url = URL("$relayBaseUrl/v1/events?username=$username&ts=$timestamp&sig=$sig")
                 val conn = (url.openConnection() as HttpURLConnection).apply {
                     requestMethod = "GET"
                     setRequestProperty("Accept", "text/event-stream")
+                    setRequestProperty("X-Glyph-Timestamp", "$timestamp")
+                    setRequestProperty("X-Glyph-Signature", sig)
                     connectTimeout = 30000
                     readTimeout = 0 // Infinite stream
                 }
 
                 if (conn.responseCode != 200) {
-                    Log.w(TAG, "SSE connection failed: ${conn.responseCode}")
+                    val err = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: "HTTP ${conn.responseCode}"
+                    Log.w(TAG, "SSE connection failed (${conn.responseCode}): $err")
                     return@withContext
                 }
 

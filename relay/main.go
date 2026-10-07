@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -104,6 +105,7 @@ type SendRequest struct {
 	Nonce        string `json:"nonce"`
 	EphemeralKey string `json:"ephemeral_key"`
 	Timestamp    int64  `json:"timestamp"`
+	Sig          string `json:"sig"`
 }
 
 func writeJSON(w http.ResponseWriter, status int, data interface{}) {
@@ -271,6 +273,57 @@ func (s *Server) handleRotate(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"status": "rotated", "username": req.Username, "pubkey": req.NewPubKey})
 }
 
+func (s *Server) authenticateUser(username, action string, r *http.Request) error {
+	sigStr := r.Header.Get("X-Glyph-Signature")
+	tsStr := r.Header.Get("X-Glyph-Timestamp")
+
+	if sigStr == "" {
+		sigStr = r.URL.Query().Get("sig")
+	}
+	if tsStr == "" {
+		tsStr = r.URL.Query().Get("ts")
+	}
+
+	if sigStr == "" || tsStr == "" {
+		return fmt.Errorf("missing authentication credentials (X-Glyph-Signature and X-Glyph-Timestamp required)")
+	}
+
+	ts, err := strconv.ParseInt(tsStr, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid timestamp format")
+	}
+
+	now := time.Now().Unix()
+	if ts < now-300 || ts > now+300 {
+		return fmt.Errorf("authentication timestamp expired or skewed (> 300s drift)")
+	}
+
+	id, err := s.db.ResolveIdentity(username)
+	if err != nil || id == nil {
+		return fmt.Errorf("identity not found")
+	}
+	if id.Revoked {
+		return fmt.Errorf("identity is revoked")
+	}
+
+	pubBytes, err := hex.DecodeString(id.PubKey)
+	if err != nil || len(pubBytes) != ed25519.PublicKeySize {
+		return fmt.Errorf("invalid registered public key")
+	}
+
+	sigBytes, err := hex.DecodeString(sigStr)
+	if err != nil || len(sigBytes) != ed25519.SignatureSize {
+		return fmt.Errorf("invalid signature encoding")
+	}
+
+	authMsg := fmt.Sprintf("%s:%s:%d", action, username, ts)
+	if !ed25519.Verify(pubBytes, []byte(authMsg), sigBytes) {
+		return fmt.Errorf("cryptographic signature verification failed")
+	}
+
+	return nil
+}
+
 func (s *Server) handleRevoke(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeError(w, http.StatusMethodNotAllowed, "Method not allowed")
@@ -289,10 +342,20 @@ func (s *Server) handleRevoke(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "Identity not found")
 		return
 	}
+	if id.Revoked {
+		writeError(w, http.StatusConflict, "Identity already revoked")
+		return
+	}
 
-	pubBytes, err := hex.DecodeString(req.PubKey)
+	// Strictly verify that the requested public key matches the CURRENT registered identity key
+	if !strings.EqualFold(req.PubKey, id.PubKey) {
+		writeError(w, http.StatusForbidden, "Public key does not match registered identity")
+		return
+	}
+
+	pubBytes, err := hex.DecodeString(id.PubKey)
 	if err != nil || len(pubBytes) != ed25519.PublicKeySize {
-		writeError(w, http.StatusBadRequest, "Invalid public key")
+		writeError(w, http.StatusBadRequest, "Invalid registered public key")
 		return
 	}
 	sigBytes, err := hex.DecodeString(req.Sig)
@@ -336,8 +399,8 @@ func (s *Server) handleSend(w http.ResponseWriter, r *http.Request) {
 	req.Recipient = strings.ToLower(strings.TrimSpace(req.Recipient))
 	req.Sender = strings.ToLower(strings.TrimSpace(req.Sender))
 
-	if req.Recipient == "" || req.Sender == "" || req.Ciphertext == "" || req.Nonce == "" {
-		writeError(w, http.StatusBadRequest, "Recipient, sender, ciphertext, and nonce are required")
+	if req.Recipient == "" || req.Sender == "" || req.Ciphertext == "" || req.Nonce == "" || req.Sig == "" {
+		writeError(w, http.StatusBadRequest, "Recipient, sender, ciphertext, nonce, and sig are required")
 		return
 	}
 
@@ -347,8 +410,49 @@ func (s *Server) handleSend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	now := time.Now().Unix()
 	if req.Timestamp == 0 {
-		req.Timestamp = time.Now().Unix()
+		req.Timestamp = now
+	}
+	if req.Timestamp < now-300 || req.Timestamp > now+300 {
+		writeError(w, http.StatusBadRequest, "Message timestamp expired or skewed (> 300s drift)")
+		return
+	}
+
+	// 1. Authenticate sender: sender must exist and signature must be valid
+	senderID, err := s.db.ResolveIdentity(req.Sender)
+	if err != nil || senderID == nil {
+		writeError(w, http.StatusUnauthorized, "Sender identity not found")
+		return
+	}
+	if senderID.Revoked {
+		writeError(w, http.StatusForbidden, "Sender identity is revoked")
+		return
+	}
+
+	senderPubBytes, err := hex.DecodeString(senderID.PubKey)
+	if err != nil || len(senderPubBytes) != ed25519.PublicKeySize {
+		writeError(w, http.StatusInternalServerError, "Invalid sender public key in database")
+		return
+	}
+
+	sigBytes, err := hex.DecodeString(req.Sig)
+	if err != nil || len(sigBytes) != ed25519.SignatureSize {
+		writeError(w, http.StatusBadRequest, "Invalid sender signature format")
+		return
+	}
+
+	sendMsg := fmt.Sprintf("send:%s:%s:%s:%s:%s:%d", req.Sender, req.Recipient, req.Ciphertext, req.Nonce, req.EphemeralKey, req.Timestamp)
+	if !ed25519.Verify(senderPubBytes, []byte(sendMsg), sigBytes) {
+		writeError(w, http.StatusUnauthorized, "Cryptographic sender signature verification failed")
+		return
+	}
+
+	// 2. Validate recipient identity
+	recipID, err := s.db.ResolveIdentity(req.Recipient)
+	if err != nil || recipID == nil || recipID.Revoked {
+		writeError(w, http.StatusNotFound, "Recipient identity not found or revoked")
+		return
 	}
 
 	envelope := MessageEnvelope{
@@ -388,6 +492,11 @@ func (s *Server) handleInbox(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := s.authenticateUser(username, "inbox", r); err != nil {
+		writeError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
 	messages, err := s.db.FetchInbox(username, 50)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "Failed to fetch inbox")
@@ -408,6 +517,11 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 	username := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("username")))
 	if username == "" {
 		writeError(w, http.StatusBadRequest, "username parameter is required")
+		return
+	}
+
+	if err := s.authenticateUser(username, "events", r); err != nil {
+		writeError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
 

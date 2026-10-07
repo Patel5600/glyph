@@ -138,4 +138,60 @@ object Ed25519 {
         System.arraycopy(sBytes, 0, sig, 32, 32)
         return sig
     }
+
+    private fun decodePoint(s: ByteArray): Point? {
+        if (s.size != 32) return null
+        val yBytes = s.copyOf()
+        val xBit = (yBytes[31].toInt() and 0x80) != 0
+        yBytes[31] = (yBytes[31].toInt() and 0x7F).toByte()
+        val y = fromLittleEndian(yBytes, 0, 32).mod(P)
+
+        val u = y.pow(2).subtract(BigInteger.ONE).mod(P)
+        val v = D.multiply(y.pow(2)).add(BigInteger.ONE).mod(P)
+        val vInv = try { v.modInverse(P) } catch (e: Exception) { return null }
+        val x2 = u.multiply(vInv).mod(P)
+
+        if (x2.equals(BigInteger.ZERO)) {
+            if (xBit) return null
+            return Point(BigInteger.ZERO, y)
+        }
+
+        var x = x2.modPow(P.add(BigInteger.valueOf(3)).divide(BigInteger.valueOf(8)), P)
+        if (!x.pow(2).subtract(x2).mod(P).equals(BigInteger.ZERO)) {
+            x = x.multiply(I).mod(P)
+        }
+        if (!x.pow(2).subtract(x2).mod(P).equals(BigInteger.ZERO)) {
+            return null
+        }
+        if (x.testBit(0) != xBit) {
+            x = P.subtract(x)
+        }
+        return Point(x, y)
+    }
+
+    /**
+     * Verifies an RFC 8032 Ed25519 signature.
+     * Returns true if valid, false otherwise.
+     */
+    fun verify(pubKey: ByteArray, msg: ByteArray, sig: ByteArray): Boolean {
+        if (pubKey.size != 32 || sig.size != 64) return false
+        val rBytes = Arrays.copyOfRange(sig, 0, 32)
+        val sBytes = Arrays.copyOfRange(sig, 32, 64)
+
+        val s = fromLittleEndian(sBytes, 0, 32)
+        if (s >= L || s < BigInteger.ZERO) return false
+
+        val aPoint = decodePoint(pubKey) ?: return false
+        val rPoint = decodePoint(rBytes) ?: return false
+
+        val kHash = sha512(rBytes, pubKey, msg)
+        val k = fromLittleEndian(kHash, 0, 64).mod(L)
+
+        // S * B = R + k * A
+        val sB = mul(Point(BX, BY), s)
+        val kA = mul(aPoint, k)
+        val rPlusKa = add(rPoint, kA)
+
+        return sB.x.equals(rPlusKa.x) && sB.y.equals(rPlusKa.y)
+    }
 }

@@ -185,12 +185,13 @@ class ChatThreadActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                // 1. Encrypt with MAMA40 X25519 ECDH + ChaCha20-Poly1305 AEAD
+                // 1. Encrypt with MAMA40 X25519 ECDH + ChaCha20-Poly1305 AEAD + Ed25519 Sender Signature
                 val packet = ChatCrypto.encrypt(
                     plaintext = text,
                     recipientDhPubHex = contact.dhPubHex,
                     senderUsername = active.username,
-                    recipientUsername = peerUsername
+                    recipientUsername = peerUsername,
+                    senderSignPrivHex = active.signPrivKeyHex
                 )
 
                 // 2. Save locally immediately
@@ -202,13 +203,24 @@ class ChatThreadActivity : AppCompatActivity() {
                 )
                 loadMessages()
 
-                // 3. Dispatch encrypted blob to relay
+                // 3. Authenticate and dispatch encrypted blob to relay
+                val sig = app.identityManager.signSend(
+                    record = active,
+                    recipient = peerUsername,
+                    ciphertext = packet.ciphertextBase64,
+                    nonce = packet.nonceHex,
+                    ephemeralKey = packet.ephemeralKeyHex,
+                    timestamp = now
+                )
+
                 val res = app.relayClient.sendMessage(
                     recipient = peerUsername,
                     sender = active.username,
                     ciphertext = packet.ciphertextBase64,
                     nonce = packet.nonceHex,
-                    ephemeralKey = packet.ephemeralKeyHex
+                    ephemeralKey = packet.ephemeralKeyHex,
+                    timestamp = now,
+                    sig = sig
                 )
 
                 if (res.isFailure) {
