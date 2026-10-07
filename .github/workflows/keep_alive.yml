@@ -1,0 +1,20 @@
+name: Keep Alive Relay
+
+on:
+  schedule:
+    # Runs every 10 minutes (Render sleeps after 15 min of inactivity)
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Render Relay
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Glyph Relay Health Endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://glyph-relay.onrender.com/health)
+          echo "Relay health ping returned HTTP status: $STATUS"
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Warning: Relay returned non-200 status $STATUS"
+          fi

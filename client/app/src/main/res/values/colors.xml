@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg_dark">#0B0E14</color>
-    <color name="surface_dark">#161B22</color>
-    <color name="surface_border">#30363D</color>
-    <color name="accent_cyan">#00D2C4</color>
-    <color name="accent_cyan_dim">#008F85</color>
-    <color name="text_primary">#F0F6FC</color>
-    <color name="text_secondary">#8B949E</color>
-    <color name="bubble_outgoing">#005F58</color>
-    <color name="bubble_incoming">#21262D</color>
-    <color name="error_red">#F85149</color>
-    <color name="ic_launcher_background">#0D1117</color>
+    <!-- iOS Pure Black & White Palette -->
+    <color name="bg_dark">#000000</color>
+    <color name="surface_dark">#1C1C1E</color>
+    <color name="surface_border">#2C2C2E</color>
+    <color name="accent_cyan">#FFFFFF</color>
+    <color name="accent_cyan_dim">#8E8E93</color>
+    <color name="accent_white">#FFFFFF</color>
+    <color name="accent_black">#000000</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#8E8E93</color>
+    <color name="text_muted">#636366</color>
+    <color name="bubble_outgoing">#FFFFFF</color>
+    <color name="bubble_outgoing_text">#000000</color>
+    <color name="bubble_outgoing_time">#636366</color>
+    <color name="bubble_incoming">#1C1C1E</color>
+    <color name="bubble_incoming_text">#FFFFFF</color>
+    <color name="bubble_incoming_time">#8E8E93</color>
+    <color name="error_red">#FF453A</color>
+    <color name="ic_launcher_background">#000000</color>
 </resources>

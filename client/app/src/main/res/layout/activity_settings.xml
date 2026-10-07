@@ -24,6 +24,7 @@
                 android:layout_height="40dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_revert"
+                android:tint="@color/text_primary"
                 android:contentDescription="Back" />
 
             <TextView
@@ -48,16 +49,16 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Active Identity"
-                android:textColor="@color/accent_cyan"
-                android:textSize="14sp"
+                android:text="ACTIVE IDENTITY"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/txtSettingsUsername"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="6dp"
                 android:text="@alice"
                 android:textColor="@color/text_primary"
                 android:textSize="20sp"
@@ -88,49 +89,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="16dp"
-                android:background="@drawable/bg_input"
+                android:background="@drawable/btn_capsule_secondary"
                 android:text="Show Recovery Code"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp" />
-        </LinearLayout>
-
-        <!-- Relay Server Configuration -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_card"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Relay Server URL"
-                android:textColor="@color/accent_cyan"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/editSettingsRelayUrl"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_input"
-                android:paddingHorizontal="14dp"
-                android:textColor="@color/text_primary"
-                android:textSize="13sp" />
-
-            <Button
-                android:id="@+id/btnSaveRelayUrl"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/btn_primary"
-                android:text="Save Relay URL"
-                android:textColor="@color/bg_dark"
-                android:textSize="13sp"
-                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- Switch Identity / Add Identity -->
@@ -145,9 +107,9 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Stored Identities (Max 3)"
-                android:textColor="@color/accent_cyan"
-                android:textSize="14sp"
+                android:text="STORED IDENTITIES (MAX 3)"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -163,7 +125,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/bg_input"
+                android:background="@drawable/btn_capsule_secondary"
                 android:text="+ Add Another Identity"
                 android:textColor="@color/text_primary"
                 android:textSize="13sp" />

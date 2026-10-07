@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/onboarding_title"
-            android:textColor="@color/accent_cyan"
+            android:textColor="@color/text_primary"
             android:textSize="28sp"
             android:textStyle="bold" />
 
@@ -67,29 +67,6 @@
                 android:textColorHint="@color/text_secondary"
                 android:textSize="15sp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Relay Server URL"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/editRelayUrl"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_input"
-                android:hint="http://10.0.2.2:8080 or Render URL"
-                android:importantForAutofill="no"
-                android:inputType="textUri"
-                android:paddingHorizontal="16dp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/text_secondary"
-                android:textSize="14sp" />
-
             <Button
                 android:id="@+id/btnClaim"
                 android:layout_width="match_parent"
@@ -97,7 +74,7 @@
                 android:layout_marginTop="28dp"
                 android:background="@drawable/btn_primary"
                 android:text="@string/claim_button"
-                android:textColor="@color/bg_dark"
+                android:textColor="@color/accent_black"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -107,6 +84,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="16dp"
+                android:indeterminateTint="@color/accent_white"
                 android:visibility="gone" />
 
             <TextView
@@ -135,7 +113,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Identity Created Successfully!"
-                android:textColor="@color/accent_cyan"
+                android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -172,7 +150,7 @@
                     android:layout_height="46dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:background="@drawable/bg_input"
+                    android:background="@drawable/btn_capsule_secondary"
                     android:text="Copy Code"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
@@ -185,7 +163,7 @@
                     android:layout_marginStart="8dp"
                     android:background="@drawable/btn_primary"
                     android:text="Continue"
-                    android:textColor="@color/bg_dark"
+                    android:textColor="@color/accent_black"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </LinearLayout>

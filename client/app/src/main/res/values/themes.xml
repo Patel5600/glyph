@@ -6,6 +6,16 @@
         <item name="android:navigationBarColor">@color/bg_dark</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
-        <item name="android:colorAccent">@color/accent_cyan</item>
+        <item name="android:colorAccent">@color/accent_white</item>
+        <item name="colorAccent">@color/accent_white</item>
+        <item name="android:alertDialogTheme">@style/Theme.Glyph.Dialog</item>
+    </style>
+
+    <style name="Theme.Glyph.Dialog" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">@color/surface_dark</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:colorAccent">@color/accent_white</item>
+        <item name="colorAccent">@color/accent_white</item>
     </style>
 </resources>

@@ -1,5 +1,6 @@
 package com.glyph.messenger.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import android.widget.ImageButton
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.glyph.messenger.GlyphApp
@@ -34,8 +36,11 @@ class ChatThreadActivity : AppCompatActivity() {
     private lateinit var peerUsername: String
     private var peerContact: ContactRecord? = null
 
+    private lateinit var txtPeerAvatar: TextView
     private lateinit var txtPeerUsername: TextView
     private lateinit var txtPeerKeyFingerprint: TextView
+    private lateinit var layoutPeerHeader: View
+    private lateinit var btnProfileSettings: ImageButton
     private lateinit var btnBack: ImageButton
     private lateinit var listMessages: ListView
     private lateinit var editMessage: EditText
@@ -79,14 +84,18 @@ class ChatThreadActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
+        txtPeerAvatar = findViewById(R.id.txtPeerAvatar)
         txtPeerUsername = findViewById(R.id.txtPeerUsername)
         txtPeerKeyFingerprint = findViewById(R.id.txtPeerKeyFingerprint)
+        layoutPeerHeader = findViewById(R.id.layoutPeerHeader)
+        btnProfileSettings = findViewById(R.id.btnProfileSettings)
         btnBack = findViewById(R.id.btnBack)
         listMessages = findViewById(R.id.listMessages)
         editMessage = findViewById(R.id.editMessage)
         btnSend = findViewById(R.id.btnSend)
 
         txtPeerUsername.text = "@$peerUsername"
+        txtPeerAvatar.text = peerUsername.take(1).uppercase(Locale.ROOT)
 
         adapter = MessageAdapter()
         listMessages.adapter = adapter
@@ -95,9 +104,35 @@ class ChatThreadActivity : AppCompatActivity() {
             finish()
         }
 
+        btnProfileSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
+        layoutPeerHeader.setOnClickListener {
+            showPeerProfileDialog()
+        }
+
         btnSend.setOnClickListener {
             handleSendMessage()
         }
+    }
+
+    private fun showPeerProfileDialog() {
+        val contact = peerContact
+        val keyInfo = if (contact != null) {
+            "Username: @$peerUsername\n\nPublic Key (X25519 DH):\n${contact.dhPubHex}\n\nEncryption: ChaCha20-Poly1305 + MAMA40 Ratchet\nStatus: Verified E2EE"
+        } else {
+            "Username: @$peerUsername\n\nStatus: Resolving encryption keys..."
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Contact Profile")
+            .setMessage(keyInfo)
+            .setPositiveButton("User Settings") { _, _ ->
+                startActivity(Intent(this, SettingsActivity::class.java))
+            }
+            .setNegativeButton("Close", null)
+            .show()
     }
 
     private fun loadPeerContact() {

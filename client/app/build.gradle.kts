@@ -19,6 +19,8 @@ android {
         ndk {
             abiFilters.add("arm64-v8a")
         }
+
+        resourceConfigurations += listOf("en")
     }
 
     buildTypes {
@@ -49,6 +51,13 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "**/*.kotlin_builtins"
+            excludes += "META-INF/*.version"
+            excludes += "META-INF/*.kotlin_module"
+            excludes += "DebugProbesKt.bin"
+        }
+        jniLibs {
+            useLegacyPackaging = true // Compresses native libs inside APK
         }
     }
 }

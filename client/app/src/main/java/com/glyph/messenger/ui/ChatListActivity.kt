@@ -105,18 +105,23 @@ class ChatListActivity : AppCompatActivity() {
     }
 
     private fun showNewChatDialog() {
+        val container = android.widget.FrameLayout(this).apply {
+            setPadding(48, 16, 48, 16)
+        }
         val input = EditText(this).apply {
             hint = "Enter username (e.g. bob)"
             setSingleLine()
-            setPadding(48, 36, 48, 36)
+            setBackgroundResource(R.drawable.bg_input)
+            setPadding(32, 24, 32, 24)
             setTextColor(getColor(R.color.text_primary))
             setHintTextColor(getColor(R.color.text_secondary))
         }
+        container.addView(input)
 
         AlertDialog.Builder(this)
             .setTitle("New Encrypted Chat")
             .setMessage("Search peer username on the relay server:")
-            .setView(input)
+            .setView(container)
             .setPositiveButton("Start Chat") { _, _ ->
                 val targetUser = input.text.toString().trim().lowercase()
                 if (targetUser.isNotEmpty()) {

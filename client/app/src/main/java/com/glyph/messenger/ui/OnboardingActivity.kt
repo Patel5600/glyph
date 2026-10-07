@@ -26,7 +26,6 @@ class OnboardingActivity : AppCompatActivity() {
 
     private lateinit var app: GlyphApp
     private lateinit var editUsername: EditText
-    private lateinit var editRelayUrl: EditText
     private lateinit var btnClaim: Button
     private lateinit var progressBar: ProgressBar
     private lateinit var txtError: TextView
@@ -54,7 +53,6 @@ class OnboardingActivity : AppCompatActivity() {
 
     private fun initViews() {
         editUsername = findViewById(R.id.editUsername)
-        editRelayUrl = findViewById(R.id.editRelayUrl)
         btnClaim = findViewById(R.id.btnClaim)
         progressBar = findViewById(R.id.progressBar)
         txtError = findViewById(R.id.txtError)
@@ -63,8 +61,6 @@ class OnboardingActivity : AppCompatActivity() {
         txtRecoveryCode = findViewById(R.id.txtRecoveryCode)
         btnCopyRecovery = findViewById(R.id.btnCopyRecovery)
         btnContinueChats = findViewById(R.id.btnContinueChats)
-
-        editRelayUrl.setText(app.relayClient.relayBaseUrl)
 
         btnClaim.setOnClickListener {
             handleClaim()
@@ -77,15 +73,10 @@ class OnboardingActivity : AppCompatActivity() {
 
     private fun handleClaim() {
         val username = editUsername.text.toString().trim().lowercase()
-        val customUrl = editRelayUrl.text.toString().trim()
 
         if (!username.matches(Regex("^[a-z0-9_]{3,32}$"))) {
             showError("Username must be 3–32 characters, lowercase letters, numbers, or underscores.")
             return
-        }
-
-        if (customUrl.isNotEmpty()) {
-            app.relayClient.relayBaseUrl = customUrl
         }
 
         hideError()

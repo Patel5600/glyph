@@ -9,7 +9,7 @@
         android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/surface_dark"
+        android:background="@color/bg_dark"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="16dp">
@@ -19,8 +19,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Glyph"
-            android:textColor="@color/accent_cyan"
-            android:textSize="20sp"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <TextView
@@ -39,6 +39,7 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@android:drawable/ic_menu_manage"
+            android:tint="@color/text_primary"
             android:contentDescription="@string/settings" />
     </LinearLayout>
 
@@ -56,7 +57,7 @@
         android:layout_height="match_parent"
         android:layout_below="@id/dividerTop"
         android:divider="@color/surface_border"
-        android:dividerHeight="1dp" />
+        android:dividerHeight="0.5dp" />
 
     <!-- Empty State -->
     <TextView
@@ -68,8 +69,7 @@
         android:padding="32dp"
         android:text="No chats yet.\nTap '+ New Chat' to message someone by their username!"
         android:textColor="@color/text_secondary"
-        android:textSize="15sp"
-        android:visibility="gone" />
+        android:textSize="15sp" />
 
     <!-- Floating Action Button: New Chat -->
     <Button
@@ -82,7 +82,7 @@
         android:background="@drawable/btn_primary"
         android:paddingHorizontal="24dp"
         android:text="+ New Chat"
-        android:textColor="@color/bg_dark"
+        android:textColor="@color/accent_black"
         android:textSize="15sp"
         android:textStyle="bold" />
 

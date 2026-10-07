@@ -26,8 +26,6 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var txtSettingsSignKey: TextView
     private lateinit var txtSettingsDhKey: TextView
     private lateinit var btnExportRecovery: Button
-    private lateinit var editSettingsRelayUrl: EditText
-    private lateinit var btnSaveRelayUrl: Button
     private lateinit var txtIdentitiesList: TextView
     private lateinit var btnAddIdentity: Button
 
@@ -46,21 +44,11 @@ class SettingsActivity : AppCompatActivity() {
         txtSettingsSignKey = findViewById(R.id.txtSettingsSignKey)
         txtSettingsDhKey = findViewById(R.id.txtSettingsDhKey)
         btnExportRecovery = findViewById(R.id.btnExportRecovery)
-        editSettingsRelayUrl = findViewById(R.id.editSettingsRelayUrl)
-        btnSaveRelayUrl = findViewById(R.id.btnSaveRelayUrl)
         txtIdentitiesList = findViewById(R.id.txtIdentitiesList)
         btnAddIdentity = findViewById(R.id.btnAddIdentity)
 
         btnSettingsBack.setOnClickListener {
             finish()
-        }
-
-        btnSaveRelayUrl.setOnClickListener {
-            val url = editSettingsRelayUrl.text.toString().trim()
-            if (url.isNotEmpty()) {
-                app.relayClient.relayBaseUrl = url
-                Toast.makeText(this, "Relay URL saved", Toast.LENGTH_SHORT).show()
-            }
         }
 
         btnExportRecovery.setOnClickListener {
@@ -84,8 +72,6 @@ class SettingsActivity : AppCompatActivity() {
             txtSettingsSignKey.text = "Ed25519 Pub: ${active.signPubKeyHex.take(16)}...${active.signPubKeyHex.takeLast(8)}"
             txtSettingsDhKey.text = "X25519 DH Pub: ${active.dhPubKeyHex.take(16)}...${active.dhPubKeyHex.takeLast(8)}"
         }
-
-        editSettingsRelayUrl.setText(app.relayClient.relayBaseUrl)
 
         val identities = app.identityManager.listIdentities()
         val textBuilder = StringBuilder()
